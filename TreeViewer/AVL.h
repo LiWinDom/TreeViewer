@@ -1,16 +1,17 @@
 #pragma once
 #include <algorithm>
+#include <SFML/Graphics.hpp>
+
+#include "Config.h"
 
 class AVL
 {
 public:
-	AVL();
-
 	uint16_t getHeight();
 
 	void insert(const uint16_t& key, const int& data);
 
-	void inOrder();
+private:
 	struct Node {
 		uint16_t key, height = 1;
 		int data;
@@ -27,11 +28,23 @@ public:
 
 	Node* start = nullptr;
 
-private:
-
 	uint16_t getNodeHeight(const Node* node);
 
 	void recalcNodeHeight(Node*& node);
 
 	void nodeInsert(Node*& node, const uint16_t& key, const int& data);
+};
+
+
+class AVLdrawer : public AVL {
+public:
+	AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height);
+
+	void draw(sf::RenderWindow& window);
+
+private:
+	uint16_t x, y;
+	uint16_t width, height;
+
+	sf::RectangleShape border;
 };

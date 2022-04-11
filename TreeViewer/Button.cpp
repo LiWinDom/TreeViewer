@@ -1,41 +1,63 @@
 #include "Button.h"
 
 Button::Button(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height, const std::string& text) {
-        this->x = x;
-        this->y = y;
-        this->width = width;
-        this->height = height;
-        this->text = text;
-        font.loadFromFile("resourses/Consolas.ttf");
-    }
+    this->x = x;
+    this->y = y;
+    this->width = width;
+    this->height = height;
+    this->text = text;
+    font.loadFromFile("resourses/Consolas.ttf");
+    return;
+}
 
 void Button::draw(sf::RenderWindow& window) {
-        sf::RectangleShape border;
-        sf::Text textText;
+    this->border.setOutlineThickness(BORDER_SIZE);
+    this->border.setFillColor(sf::Color(BACKGROUND_COLOR));
+    this->border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
+    this->border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
 
-        border.setOutlineThickness(BORDER_SIZE);
-        border.setOutlineColor(sf::Color(selected ? PADDING_SIZE : TEXT_COLOR));
-        border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
-        border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
-        border.setFillColor(sf::Color(BACKGROUND_COLOR));
+    this->textText.setFont(font);
+    this->textText.setCharacterSize(TEXT_SIZE);
+    this->textText.setString(text);
+    sf::FloatRect bounds = textText.getLocalBounds();
+    this->textText.setOrigin(bounds.width / 2, TEXT_SIZE / 1.75);
+    this->textText.setPosition(x + width / 2 - BORDER_SIZE, y + height / 2 - BORDER_SIZE);
 
-        textText.setFont(font);
-        textText.setCharacterSize(TEXT_SIZE);
-        textText.setFillColor(sf::Color(selected ? PADDING_SIZE : TEXT_COLOR));
-        textText.setString(text);
-        sf::FloatRect bounds = textText.getLocalBounds();
-        textText.setOrigin(bounds.width / 2, TEXT_SIZE / 1.75);
-        textText.setPosition(x + width / 2 - BORDER_SIZE, y + height / 2 - BORDER_SIZE);
+    switch (selected) {
+    case 0:
+        this->border.setOutlineColor(sf::Color(INACTIVE_COLOR));
+        this->textText.setFillColor(sf::Color(INACTIVE_COLOR));
+        break;
+    case 1:
+        this->border.setOutlineColor(sf::Color(HOVER_COLOR));
+        this->textText.setFillColor(sf::Color(HOVER_COLOR));
+        break;
+    case 2:
+        this->border.setOutlineColor(sf::Color(SELECTED_COLOR));
+        this->textText.setFillColor(sf::Color(SELECTED_COLOR));
+        break;
+    }
 
-        window.draw(border);
-        window.draw(textText);
+    window.draw(border);
+    window.draw(textText);
 
+    return;
+}
+
+void Button::select(const bool& selected) {
+    if (selected) {
+        this->selected = 2;
         return;
     }
+    this->selected = 0;
+    return;
+}
 
 bool Button::on(const uint16_t& curX, const uint16_t& curY) {
     if (curX >= x && curX <= x + width && curY >= y && curY <= y + height) {
-        return selected = true;
+        if (this->selected != 2) this->selected = 1;
+        return true;
     }
-    return selected = false; 
+    if (this->selected != 2) this->selected = 0;
+    return false;
 }

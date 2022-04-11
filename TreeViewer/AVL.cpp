@@ -1,9 +1,5 @@
 #include "AVL.h"
 
-AVL::AVL() {
-	return;
-}
-
 uint16_t AVL::getHeight() {
 	if (start == nullptr) return 0;
 	return start->height;
@@ -47,7 +43,7 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 	this->recalcNodeHeight(node);
 
 	// Balancing
-	int8_t balance = getNodeHeight(node->left) - getNodeHeight(node->right);
+	int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
 	if (balance > 1) {
 		Node* t = node->left;
 		node->left = t->right;
@@ -66,5 +62,25 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 		this->recalcNodeHeight(node);
 		this->recalcNodeHeight(t);
 	}
+	return;
+}
+
+
+AVLdrawer::AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height) {
+	this->x = x;
+	this->y = y;
+	this->width = width;
+	this->height = height;
+
+	this->border.setOutlineThickness(BORDER_SIZE);
+	this->border.setFillColor(sf::Color(BACKGROUND_COLOR));
+	this->border.setOutlineColor(sf::Color(SELECTED_COLOR));
+	this->border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
+	this->border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
+	return;
+}
+
+void AVLdrawer::draw(sf::RenderWindow& window) {
+	window.draw(this->border);
 	return;
 }
