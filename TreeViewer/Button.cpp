@@ -12,7 +12,7 @@ Button::Button(const uint16_t& x, const uint16_t& y, const uint16_t& width, cons
 
 void Button::draw(sf::RenderWindow& window) {
     this->border.setOutlineThickness(BORDER_SIZE);
-    this->border.setFillColor(sf::Color(BACKGROUND_COLOR));
+    this->border.setFillColor(sf::Color(0));
     this->border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
     this->border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
 

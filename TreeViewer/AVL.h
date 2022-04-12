@@ -43,8 +43,10 @@ public:
 	void draw(sf::RenderWindow& window);
 
 private:
-	uint16_t x, y;
+	uint16_t windowX, windowY;
 	uint16_t width, height;
+
+	float x = 0, y = 0, scale = 1;
 
 	sf::RectangleShape border;
 };

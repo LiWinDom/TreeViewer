@@ -67,20 +67,32 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 
 
 AVLdrawer::AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height) {
-	this->x = x;
-	this->y = y;
+	this->windowX = x;
+	this->windowY = y;
 	this->width = width;
 	this->height = height;
 
 	this->border.setOutlineThickness(BORDER_SIZE);
-	this->border.setFillColor(sf::Color(BACKGROUND_COLOR));
+	this->border.setFillColor(sf::Color(0));
 	this->border.setOutlineColor(sf::Color(SELECTED_COLOR));
-	this->border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
-	this->border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
+	this->border.setSize(sf::Vector2f(this->width - 2 * BORDER_SIZE, this->height - 2 * BORDER_SIZE));
+	this->border.setPosition(this->windowX + BORDER_SIZE, this->windowY + BORDER_SIZE);
+
 	return;
 }
 
 void AVLdrawer::draw(sf::RenderWindow& window) {
 	window.draw(this->border);
+
+	sf::CircleShape vertex;
+	vertex.setOutlineThickness(BORDER_SIZE);
+	vertex.setFillColor(sf::Color(0x00000000));
+	vertex.setOutlineColor(sf::Color(SELECTED_COLOR));
+	vertex.setRadius(50);
+	sf::FloatRect bounds = vertex.getLocalBounds();
+	vertex.setOrigin(bounds.width / 2.0, bounds.height / 2.0);
+	vertex.setPosition(this->x + this->windowX + this->width / 2.0, this->y + this->windowY + this->height / 2.0);
+	window.draw(vertex);
+
 	return;
 }

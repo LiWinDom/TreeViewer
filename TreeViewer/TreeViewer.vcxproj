@@ -24,7 +24,7 @@
     <ProjectGuid>{3d455cca-bcc6-4964-a3ae-80dbc54827e2}</ProjectGuid>
     <RootNamespace>Practicum1</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>LineTextEditor</ProjectName>
+    <ProjectName>TreeViewer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

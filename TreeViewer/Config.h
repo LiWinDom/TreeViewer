@@ -8,6 +8,6 @@
 #define BORDER_SIZE	 2
 //all colors are in HEX format (0x11223344: 11 - red color, 22 - green color, 33 - blue color, 44 - alpha channel)
 #define BACKGROUND_COLOR	0xFFFFFFFF
-#define INACTIVE_COLOR		0x808080FF
-#define HOVER_COLOR			0x404040FF
+#define INACTIVE_COLOR		0xA0A0A0FF
+#define HOVER_COLOR			0x808080FF
 #define SELECTED_COLOR		0x000000FF
