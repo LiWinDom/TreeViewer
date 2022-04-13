@@ -33,6 +33,10 @@ protected:
 	void recalcNodeHeight(Node*& node);
 
 	void nodeInsert(Node*& node, const uint16_t& key, const int& data);
+
+	uint16_t getNodeLayer(Node* node);
+
+	float getNodeMagic(Node* node);
 };
 
 
@@ -40,7 +44,7 @@ class AVLdrawer : public AVL {
 public:
 	AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height);
 
-	void draw(sf::RenderWindow& window);
+	void draw(sf::RenderWindow& window, const std::string& show = "key");
 
 	void eventProcessing(const sf::Event& event, const sf::Vector2i& mousePos);
 
@@ -52,16 +56,15 @@ private:
 	float curX = 0, curY = 0;
 	uint8_t needScale = 4;
 	float curScale = 1;
+	const float scales[7] = { 0.01, 0.1, 0.3, 0.5, 1, 2, 3 };
 
-	const float scales[7] = { 0.05, 0.1, 0.3, 0.5, 1, 2, 3 };
 	sf::Font font;
-
-	sf::RectangleShape border;
-	sf::RectangleShape left, top, right, bottom;
 
 	float convertSize(const float& size);
 
 	sf::Vector2f convertCoordinate(const float& coordX, const float& coordY);
 
-	void drawSubtree(sf::RenderWindow& window, const Node& subtree);
+	sf::Vector2f getNodeCoordinate(Node* node);
+
+	void drawNode(sf::RenderWindow& window, Node* node, const std::string& show = "key");
 };

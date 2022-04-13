@@ -13,13 +13,13 @@ Button::Button(const uint16_t& x, const uint16_t& y, const uint16_t& width, cons
     this->textText.setString(text);
     //sf::FloatRect bounds = this->textText.getLocalBounds(); // idk why its not working for me
     //this->textText.setOrigin(bounds.width / 2.0, TEXT_SIZE / 1.75);
-    this->textText.setPosition(x + width / 2.0 - BORDER_SIZE, y + height / 2.0 - BORDER_SIZE);
+    this->textText.setPosition(x + PADDING_SIZE + (text.size() * TEXT_SIZE / 4.0), y);
     return;
 }
 
 void Button::draw(sf::RenderWindow& window) {
     this->border.setOutlineThickness(BORDER_SIZE);
-    this->border.setFillColor(sf::Color(0));
+    this->border.setFillColor(sf::Color(BACKGROUND_COLOR));
     this->border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
     this->border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
 

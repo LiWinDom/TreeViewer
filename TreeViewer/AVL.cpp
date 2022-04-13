@@ -65,6 +65,40 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 	return;
 }
 
+uint16_t AVL::getNodeLayer(Node* node) {
+	if (node == nullptr) return 0;
+
+	Node* q = this->start;
+	uint16_t layer = 0;
+	while (q->key != node->key) {
+		if (node->key < q->key) q = q->left;
+		else if (node->key > q->key) q = q->right;
+		++layer;
+	}
+	return layer;
+}
+
+float AVL::getNodeMagic(Node* node) {
+	if (node == nullptr) return 0;
+
+	float mult = 1;
+	float total = 0;
+
+	Node* q = this->start;
+	while (q->key != node->key) {
+		if (node->key < q->key) {
+			total -= mult;
+			q = q->left;
+		}
+		else if (node->key > q->key) {
+			total += mult;
+			q = q->right;
+		}
+		mult /= 2;
+	}
+	return total;
+}
+
 
 AVLdrawer::AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height) {
 	this->windowX = x;
@@ -72,25 +106,7 @@ AVLdrawer::AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width
 	this->width = width;
 	this->height = height;
 
-	this->border.setOutlineThickness(BORDER_SIZE);
-	this->border.setFillColor(sf::Color(0));
-	this->border.setOutlineColor(sf::Color(SELECTED_COLOR));
-	this->border.setSize(sf::Vector2f(this->width - 2 * BORDER_SIZE, this->height - 2 * BORDER_SIZE));
-	this->border.setPosition(this->windowX + BORDER_SIZE, this->windowY + BORDER_SIZE);
-
-	this->left.setFillColor(sf::Color(BACKGROUND_COLOR));
-	this->left.setSize(sf::Vector2f(this->windowX, WINDOW_HEIGHT));
-	this->top.setFillColor(sf::Color(BACKGROUND_COLOR));
-	this->top.setSize(sf::Vector2f(WINDOW_WIDTH, this->windowY));
-	this->right.setFillColor(sf::Color(BACKGROUND_COLOR));
-	this->right.setSize(sf::Vector2f(WINDOW_WIDTH - this->windowX - this->width, WINDOW_HEIGHT));
-	this->right.setPosition(this->windowX + this->width, 0);
-	this->bottom.setFillColor(sf::Color(BACKGROUND_COLOR));
-	this->bottom.setSize(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT - this->windowY - this->height));
-	this->bottom.setPosition(0, this->windowY + this->height);
-
 	font.loadFromFile("resourses/Consolas.ttf");
-
 	return;
 }
 
@@ -119,37 +135,12 @@ void AVLdrawer::eventProcessing(const sf::Event& event, const sf::Vector2i& mous
 	return;
 }
 
-void AVLdrawer::draw(sf::RenderWindow& window) {
+void AVLdrawer::draw(sf::RenderWindow& window, const std::string& show) {
 	this->curScale += (scales[needScale] - this->curScale) / 5.0;
 	this->curX += (this->needX - this->curX) / 5.0;
 	this->curY += (this->needY - this->curY) / 5.0;
 
-	sf::CircleShape vertex;
-	vertex.setOutlineThickness(BORDER_SIZE);
-	vertex.setFillColor(sf::Color(0x00000000));
-	vertex.setOutlineColor(sf::Color(SELECTED_COLOR));
-	vertex.setRadius(this->convertSize(25));
-	sf::FloatRect bounds = vertex.getLocalBounds();
-	vertex.setOrigin(bounds.width / 2.0, bounds.height / 2.0);
-	vertex.setPosition(this->convertCoordinate(this->curX, this->curY));
-	window.draw(vertex);
-
-	sf::Text text;
-	text.setFont(this->font);
-	text.setCharacterSize(convertSize(TEXT_SIZE / 2.0));
-	text.setString(std::to_string(this->start->key));
-	text.setFillColor(sf::Color(SELECTED_COLOR));
-	bounds = text.getLocalBounds();
-	text.setOrigin(bounds.width / 2.0, convertSize(TEXT_SIZE / 2.0) / 1.3);
-	text.setPosition(convertCoordinate(this->curX, this->curY));
-	window.draw(text);
-
-	window.draw(this->border);
-	window.draw(this->left);
-	window.draw(this->top);
-	window.draw(this->right);
-	window.draw(this->bottom);
-
+	this->drawNode(window, this->start, show);
 	return;
 }
 
@@ -158,5 +149,44 @@ float AVLdrawer::convertSize(const float& size) {
 }
 
 sf::Vector2f AVLdrawer::convertCoordinate(const float& coordX, const float& coordY) {
-	return sf::Vector2f(coordX * this->curScale + this->windowX + this->width / 2.0, coordY * this->curScale + this->windowY + this->height / 2.0);
+	return sf::Vector2f(convertSize(coordX + curX) + this->windowX + this->width / 2.0, convertSize(coordY + curY) + this->windowY + this->height / 2.0);
+}
+
+sf::Vector2f AVLdrawer::getNodeCoordinate(Node* node) {
+	if (node == nullptr) return sf::Vector2f(0, 0);
+	return this->convertCoordinate(this->getNodeMagic(node) * std::pow(2, this->getHeight() - 1) * VERTEX_SIZE, this->getNodeLayer(node) * 75);
+}
+
+void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, const std::string& show) {
+	if (node == nullptr) return;
+	sf::Vector2f coordinate = this->getNodeCoordinate(node);
+
+	if (coordinate.y > WINDOW_HEIGHT + 100) return;
+	if (coordinate.x > -100 && coordinate.x < WINDOW_WIDTH + 100 && coordinate.y > -100) {
+		sf::CircleShape vertex;
+		vertex.setOutlineThickness(BORDER_SIZE);
+		vertex.setFillColor(sf::Color(BACKGROUND_COLOR));
+		vertex.setOutlineColor(sf::Color(SELECTED_COLOR));
+		vertex.setRadius(this->convertSize(VERTEX_SIZE));
+		sf::FloatRect bounds = vertex.getLocalBounds();
+		vertex.setOrigin(bounds.width / 2.0, bounds.height / 2.0);
+		vertex.setPosition(coordinate);
+		window.draw(vertex);
+
+		sf::Text text;
+		text.setFont(this->font);
+		text.setCharacterSize(convertSize(TEXT_SIZE / 2.0));
+		if (show == "key") text.setString(std::to_string(node->key));
+		else if (show == "data") text.setString(std::to_string(node->data));
+		text.setFillColor(sf::Color(SELECTED_COLOR));
+		bounds = text.getLocalBounds();
+		text.setOrigin(bounds.width / 2.0, bounds.height);
+		text.setPosition(coordinate);
+		window.draw(text);
+	}
+
+	this->drawNode(window, node->left, show);
+	this->drawNode(window, node->right, show);
+
+	return;
 }

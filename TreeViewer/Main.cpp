@@ -54,6 +54,7 @@ void onStart(sf::RenderWindow& window) {
     //icon.loadFromFile("resourses/icon.png");
     //window.setIcon(52, 52, icon.getPixelsPtr());
     window.setVerticalSyncEnabled(true);
+    AVLbutton->select();
 
     return;
 }
@@ -115,19 +116,16 @@ void eventProcessing(sf::RenderWindow& window) {
 }
 
 int main() {
-    for (uint8_t i = 0; i < 10; ++i) {
+    for (uint16_t i = 0; i < 100; ++i) {
         AVLtree->insert(i, std::rand());
     }
 
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tree Viewer [0.1]", sf::Style::Close);
-    AVLbutton->select();
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tree Viewer [0.2]", sf::Style::Close);
     onStart(window);
 
     while (window.isOpen()) {
         eventProcessing(window);
         display(window);
     }
-
-
     return 0;
 }
