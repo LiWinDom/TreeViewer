@@ -44,23 +44,50 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 
 	// Balancing
 	int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
-	if (balance > 1) {
+	if (balance > 1 && key < node->left->key) {
 		Node* t = node->left;
 		node->left = t->right;
 		t->right = node;
-
-		this->recalcNodeHeight(node);
-		this->recalcNodeHeight(t);
 		node = t;
+
+		this->recalcNodeHeight(t->right);
+		this->recalcNodeHeight(t);
 	}
-	else if (balance < -1) {
+	else if (balance < -1 && key > node->right->key) {
 		Node* t = node->right;
 		node->right = t->left;
 		t->left = node;
-
-		this->recalcNodeHeight(node);
-		this->recalcNodeHeight(t);
 		node = t;
+
+		this->recalcNodeHeight(t->left);
+		this->recalcNodeHeight(t);
+	}
+	// Big balancing
+	else if (balance > 1 && key > node->left->key) {
+		Node* q = node;
+		Node* p = node->left;
+		node = p->right;
+		node->left = p;
+		node->right = q;
+		q->left = nullptr;
+		p->right = nullptr;
+
+		this->recalcNodeHeight(q);
+		this->recalcNodeHeight(p);
+		this->recalcNodeHeight(node);
+	}
+	else if (balance < -1 && key < node->right->key) {
+		Node* q = node;
+		Node* p = node->right;
+		node = p->left;
+		node->left = q;
+		node->right = p;
+		q->right = nullptr;
+		p->left = nullptr;
+
+		this->recalcNodeHeight(q);
+		this->recalcNodeHeight(p);
+		this->recalcNodeHeight(node);
 	}
 	return;
 }
@@ -154,15 +181,15 @@ sf::Vector2f AVLdrawer::convertCoordinate(const float& coordX, const float& coor
 
 sf::Vector2f AVLdrawer::getNodeCoordinate(Node* node) {
 	if (node == nullptr) return sf::Vector2f(0, 0);
-	return this->convertCoordinate(this->getNodeMagic(node) * std::pow(2, this->getHeight() - 1) * VERTEX_SIZE, this->getNodeLayer(node) * 75);
+	return this->convertCoordinate(this->getNodeMagic(node) * std::pow(2, this->getHeight() - 1) * VERTEX_SIZE, this->getNodeLayer(node) * VERTEX_SIZE * 3);
 }
 
 void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, const std::string& show) {
 	if (node == nullptr) return;
 	sf::Vector2f coordinate = this->getNodeCoordinate(node);
 
-	if (coordinate.y > WINDOW_HEIGHT + 100) return;
-	if (coordinate.x > -100 && coordinate.x < WINDOW_WIDTH + 100 && coordinate.y > -100) {
+	if (coordinate.y > WINDOW_HEIGHT + convertSize(VERTEX_SIZE)) return;
+	if (coordinate.x > -convertSize(VERTEX_SIZE) && coordinate.x < WINDOW_WIDTH + convertSize(VERTEX_SIZE) && coordinate.y > -convertSize(VERTEX_SIZE)) {
 		sf::CircleShape vertex;
 		vertex.setOutlineThickness(BORDER_SIZE);
 		vertex.setFillColor(sf::Color(BACKGROUND_COLOR));

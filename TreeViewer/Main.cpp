@@ -116,8 +116,9 @@ void eventProcessing(sf::RenderWindow& window) {
 }
 
 int main() {
-    for (uint16_t i = 0; i < 100; ++i) {
-        AVLtree->insert(i, std::rand());
+    // Test tree
+    for (uint16_t i = 0; i < 19; ++i) {
+        AVLtree->insert(std::rand(), std::rand());
     }
 
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tree Viewer [0.2]", sf::Style::Close);
