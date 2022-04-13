@@ -117,11 +117,19 @@ void eventProcessing(sf::RenderWindow& window) {
 
 int main() {
     // Test tree
-    for (uint16_t i = 0; i < 19; ++i) {
-        AVLtree->insert(std::rand(), std::rand());
+    for (uint16_t i = 0; i < 61; ++i) {
+        uint16_t key = std::rand();
+        int data = std::rand();
+        try {
+            AVLtree->insert(key, data);
+            std::cout << "Added node " << key << ':' << data << std::endl;
+        }
+        catch (std::string err) {
+            std::cout << "Node with key " << key << " is already exists" << std::endl;
+        }
     }
 
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tree Viewer [0.2]", sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tree Viewer [0.3]", sf::Style::Close);
     onStart(window);
 
     while (window.isOpen()) {

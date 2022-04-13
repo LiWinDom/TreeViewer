@@ -37,8 +37,7 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 		this->nodeInsert(node->right, key, data);
 	}
 	else {
-		throw "Equal keys are not allowed";
-		return;
+		throw std::string("Equal keys are not allowed");
 	}
 	this->recalcNodeHeight(node);
 
@@ -64,29 +63,29 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 	}
 	// Big balancing
 	else if (balance > 1 && key > node->left->key) {
-		Node* q = node;
-		Node* p = node->left;
-		node = p->right;
-		node->left = p;
-		node->right = q;
-		q->left = nullptr;
-		p->right = nullptr;
+		Node* q = node->left;
+		Node* p = node->left->right;
+		node->left = p->right;
+		p->right = node;
+		q->right = p->left;
+		p->left = q;
+		node = p;
 
-		this->recalcNodeHeight(q);
-		this->recalcNodeHeight(p);
+		this->recalcNodeHeight(node->left);
+		this->recalcNodeHeight(node->right);
 		this->recalcNodeHeight(node);
 	}
 	else if (balance < -1 && key < node->right->key) {
-		Node* q = node;
-		Node* p = node->right;
-		node = p->left;
-		node->left = q;
-		node->right = p;
-		q->right = nullptr;
-		p->left = nullptr;
+		Node* q = node->right;
+		Node* p = node->right->left;
+		node->right = p->left;
+		p->left = node;
+		q->left = p->right;
+		p->right = q;
+		node = p;
 
-		this->recalcNodeHeight(q);
-		this->recalcNodeHeight(p);
+		this->recalcNodeHeight(node->left);
+		this->recalcNodeHeight(node->right);
 		this->recalcNodeHeight(node);
 	}
 	return;
@@ -189,6 +188,22 @@ void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, const std::string
 	sf::Vector2f coordinate = this->getNodeCoordinate(node);
 
 	if (coordinate.y > WINDOW_HEIGHT + convertSize(VERTEX_SIZE)) return;
+	if (node->left != nullptr) {
+		sf::VertexArray line(sf::LinesStrip, 2);
+		line[0].position = coordinate;
+		line[0].color = sf::Color(SELECTED_COLOR);
+		line[1].position = this->getNodeCoordinate(node->left);
+		line[1].color = sf::Color(SELECTED_COLOR);
+		window.draw(line);
+	}
+	if (node->right != nullptr) {
+		sf::VertexArray line(sf::LinesStrip, 2);
+		line[0].position = coordinate;
+		line[0].color = sf::Color(SELECTED_COLOR);
+		line[1].position = this->getNodeCoordinate(node->right);
+		line[1].color = sf::Color(SELECTED_COLOR);
+		window.draw(line);
+	}
 	if (coordinate.x > -convertSize(VERTEX_SIZE) && coordinate.x < WINDOW_WIDTH + convertSize(VERTEX_SIZE) && coordinate.y > -convertSize(VERTEX_SIZE)) {
 		sf::CircleShape vertex;
 		vertex.setOutlineThickness(BORDER_SIZE);
