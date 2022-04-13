@@ -6,7 +6,14 @@ Button::Button(const uint16_t& x, const uint16_t& y, const uint16_t& width, cons
     this->width = width;
     this->height = height;
     this->text = text;
+
     font.loadFromFile("resourses/Consolas.ttf");
+    this->textText.setFont(font);
+    this->textText.setCharacterSize(TEXT_SIZE);
+    this->textText.setString(text);
+    //sf::FloatRect bounds = this->textText.getLocalBounds(); // idk why its not working for me
+    //this->textText.setOrigin(bounds.width / 2.0, TEXT_SIZE / 1.75);
+    this->textText.setPosition(x + width / 2.0 - BORDER_SIZE, y + height / 2.0 - BORDER_SIZE);
     return;
 }
 
@@ -15,13 +22,6 @@ void Button::draw(sf::RenderWindow& window) {
     this->border.setFillColor(sf::Color(0));
     this->border.setSize(sf::Vector2f(width - 2 * BORDER_SIZE, height - 2 * BORDER_SIZE));
     this->border.setPosition(x + BORDER_SIZE, y + BORDER_SIZE);
-
-    this->textText.setFont(font);
-    this->textText.setCharacterSize(TEXT_SIZE);
-    this->textText.setString(text);
-    sf::FloatRect bounds = textText.getLocalBounds();
-    this->textText.setOrigin(bounds.width / 2, TEXT_SIZE / 1.75);
-    this->textText.setPosition(x + width / 2 - BORDER_SIZE, y + height / 2 - BORDER_SIZE);
 
     switch (selected) {
     case 0:

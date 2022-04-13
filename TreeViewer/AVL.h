@@ -11,7 +11,7 @@ public:
 
 	void insert(const uint16_t& key, const int& data);
 
-private:
+protected:
 	struct Node {
 		uint16_t key, height = 1;
 		int data;
@@ -42,11 +42,26 @@ public:
 
 	void draw(sf::RenderWindow& window);
 
+	void eventProcessing(const sf::Event& event, const sf::Vector2i& mousePos);
+
 private:
 	uint16_t windowX, windowY;
 	uint16_t width, height;
 
-	float x = 0, y = 0, scale = 1;
+	float needX = 0, needY = 0;
+	float curX = 0, curY = 0;
+	uint8_t needScale = 4;
+	float curScale = 1;
+
+	const float scales[7] = { 0.05, 0.1, 0.3, 0.5, 1, 2, 3 };
+	sf::Font font;
 
 	sf::RectangleShape border;
+	sf::RectangleShape left, top, right, bottom;
+
+	float convertSize(const float& size);
+
+	sf::Vector2f convertCoordinate(const float& coordX, const float& coordY);
+
+	void drawSubtree(sf::RenderWindow& window, const Node& subtree);
 };

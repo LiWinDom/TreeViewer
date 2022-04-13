@@ -96,30 +96,21 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
 
 void eventProcessing(sf::RenderWindow& window) {
     sf::Event event;
-    static bool isMousePressed = false;
 
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) window.close();
-        else if (event.type == sf::Event::KeyPressed) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            }
-        }
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         if (mousePos.x < 0 || mousePos.y < 0 || mousePos.x > window.getSize().x || mousePos.y > window.getSize().y) continue;
         for (uint8_t i = 0; i < buttons.size(); ++i) {
             buttons[i]->on(mousePos.x, mousePos.y);
         }
-
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !isMousePressed) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             clickEvent(window, mousePos.x, mousePos.y);
-            isMousePressed = true;
         }
-        if (event.type == sf::Event::MouseButtonReleased) isMousePressed = false;
-    }
 
+        if (selected == "AVL") AVLtree->eventProcessing(event, mousePos);
+    }
     return;
 }
 
