@@ -11,6 +11,8 @@ public:
 
 	void insert(const uint16_t& key, const int& data);
 
+	bool remove(const uint16_t& key);
+
 protected:
 	struct Node {
 		uint16_t key, height = 1;
@@ -32,33 +34,37 @@ protected:
 
 	void recalcNodeHeight(Node*& node);
 
+	void rightRotate(Node*& node);
+
+	void leftRotate(Node*& node);
+
 	void nodeInsert(Node*& node, const uint16_t& key, const int& data);
 
-	uint16_t getNodeLayer(Node* node);
+	bool nodeRemove(Node*& node, const uint16_t& key);
 
-	float getNodeMagic(Node* node);
+	uint16_t getNodeLayer(Node* node);
 };
 
 
 class AVLdrawer : public AVL {
 public:
-	AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height);
+	AVLdrawer();
 
 	void draw(sf::RenderWindow& window, const std::string& show = "key");
 
 	void eventProcessing(const sf::Event& event, const sf::Vector2i& mousePos);
 
 private:
-	uint16_t windowX, windowY;
-	uint16_t width, height;
-
 	float needX = 0, needY = 0;
 	float curX = 0, curY = 0;
-	uint8_t needScale = 4;
+	uint8_t needScale = 5;
 	float curScale = 1;
-	const float scales[7] = { 0.01, 0.1, 0.3, 0.5, 1, 2, 3 };
+	const float scales[7] = { 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2};
 
+	sf::Vector2i mousePos;
 	sf::Font font;
+
+	float getNodeMagic(Node* node);
 
 	float convertSize(const float& size);
 
@@ -66,5 +72,5 @@ private:
 
 	sf::Vector2f getNodeCoordinate(Node* node);
 
-	void drawNode(sf::RenderWindow& window, Node* node, const std::string& show = "key");
+	void drawNode(sf::RenderWindow& window, Node* node, Node*& drawNodeInfo, const std::string& show = "key");
 };

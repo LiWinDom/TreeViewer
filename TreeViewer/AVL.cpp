@@ -10,6 +10,10 @@ void AVL::insert(const uint16_t& key, const int& data) {
 	return;
 }
 
+bool AVL::remove(const uint16_t& key) {
+	return this->nodeRemove(this->start, key);
+}
+
 uint16_t AVL::getNodeHeight(const Node* node) {
 	if (node == nullptr) return 0;
 	return node->height;
@@ -20,6 +24,28 @@ void AVL::recalcNodeHeight(Node*& node) {
 	uint16_t hRight = this->getNodeHeight(node->right);
 
 	node->height = std::max(hLeft, hRight) + 1;
+	return;
+}
+
+void AVL::rightRotate(Node*& node) {
+	Node* t = node->left;
+	node->left = t->right;
+	t->right = node;
+	node = t;
+
+	this->recalcNodeHeight(t->right);
+	this->recalcNodeHeight(t);
+	return;
+}
+
+void AVL::leftRotate(Node*& node) {
+	Node* t = node->right;
+	node->right = t->left;
+	t->left = node;
+	node = t;
+
+	this->recalcNodeHeight(t->left);
+	this->recalcNodeHeight(t);
 	return;
 }
 
@@ -44,51 +70,58 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 	// Balancing
 	int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
 	if (balance > 1 && key < node->left->key) {
-		Node* t = node->left;
-		node->left = t->right;
-		t->right = node;
-		node = t;
-
-		this->recalcNodeHeight(t->right);
-		this->recalcNodeHeight(t);
+		this->rightRotate(node);
 	}
 	else if (balance < -1 && key > node->right->key) {
-		Node* t = node->right;
-		node->right = t->left;
-		t->left = node;
-		node = t;
-
-		this->recalcNodeHeight(t->left);
-		this->recalcNodeHeight(t);
+		this->leftRotate(node);
 	}
 	// Big balancing
 	else if (balance > 1 && key > node->left->key) {
-		Node* q = node->left;
-		Node* p = node->left->right;
-		node->left = p->right;
-		p->right = node;
-		q->right = p->left;
-		p->left = q;
-		node = p;
-
-		this->recalcNodeHeight(node->left);
-		this->recalcNodeHeight(node->right);
-		this->recalcNodeHeight(node);
+		this->leftRotate(node->left);
+		this->rightRotate(node);
 	}
 	else if (balance < -1 && key < node->right->key) {
-		Node* q = node->right;
-		Node* p = node->right->left;
-		node->right = p->left;
-		p->left = node;
-		q->left = p->right;
-		p->right = q;
-		node = p;
-
-		this->recalcNodeHeight(node->left);
-		this->recalcNodeHeight(node->right);
-		this->recalcNodeHeight(node);
+		this->rightRotate(node->right);
+		this->leftRotate(node);
 	}
 	return;
+}
+
+bool AVL::nodeRemove(Node*& node, const uint16_t& key) {
+	if (node == nullptr) return false;
+
+	// Searching node
+	bool rt = false;
+	if (key < node->key) {
+		rt = this->nodeRemove(node->left, key);
+	}
+	else if (key > node->key) {
+		rt = this->nodeRemove(node->right, key);
+	}
+	else {
+		// Deleting
+
+	}
+
+	// Balancing
+	int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
+	if (balance > 1 && key < node->left->key) {
+		this->rightRotate(node);
+	}
+	else if (balance < -1 && key > node->right->key) {
+		this->leftRotate(node);
+	}
+	// Big balancing
+	else if (balance > 1 && key > node->left->key) {
+		this->leftRotate(node->left);
+		this->rightRotate(node);
+	}
+	else if (balance < -1 && key < node->right->key) {
+		this->rightRotate(node->right);
+		this->leftRotate(node);
+	}
+
+	return rt;
 }
 
 uint16_t AVL::getNodeLayer(Node* node) {
@@ -104,7 +137,13 @@ uint16_t AVL::getNodeLayer(Node* node) {
 	return layer;
 }
 
-float AVL::getNodeMagic(Node* node) {
+
+AVLdrawer::AVLdrawer() {
+	font.loadFromFile("resourses/Consolas.ttf");
+	return;
+}
+
+float AVLdrawer::getNodeMagic(Node* node) {
 	if (node == nullptr) return 0;
 
 	float mult = 1;
@@ -123,17 +162,6 @@ float AVL::getNodeMagic(Node* node) {
 		mult /= 2;
 	}
 	return total;
-}
-
-
-AVLdrawer::AVLdrawer(const uint16_t& x, const uint16_t& y, const uint16_t& width, const uint16_t& height) {
-	this->windowX = x;
-	this->windowY = y;
-	this->width = width;
-	this->height = height;
-
-	font.loadFromFile("resourses/Consolas.ttf");
-	return;
 }
 
 void AVLdrawer::eventProcessing(const sf::Event& event, const sf::Vector2i& mousePos) {
@@ -157,7 +185,7 @@ void AVLdrawer::eventProcessing(const sf::Event& event, const sf::Vector2i& mous
 			this->needX -= 10 / scales[needScale];
 		}
 	}
-
+	this->mousePos = mousePos;
 	return;
 }
 
@@ -166,7 +194,33 @@ void AVLdrawer::draw(sf::RenderWindow& window, const std::string& show) {
 	this->curX += (this->needX - this->curX) / 5.0;
 	this->curY += (this->needY - this->curY) / 5.0;
 
-	this->drawNode(window, this->start, show);
+	Node* showInfoNode = nullptr;
+	this->drawNode(window, this->start, showInfoNode, show);
+	if (showInfoNode != nullptr) {
+		sf::Text keyText, dataText;
+		keyText.setFont(this->font);
+		keyText.setCharacterSize(TEXT_SIZE);
+		keyText.setFillColor(sf::Color(SELECTED_COLOR));
+		dataText = keyText;
+		keyText.setString("Key: " + std::to_string(showInfoNode->key));
+		dataText.setString("Data: " + std::to_string(showInfoNode->data));
+		sf::FloatRect keyTextBounds = keyText.getLocalBounds();
+		sf::FloatRect dataTextBounds = dataText.getLocalBounds();
+		keyText.setOrigin(-PADDING_SIZE, -PADDING_SIZE);
+		keyText.setPosition(sf::Vector2f(mousePos));
+		dataText.setOrigin(-PADDING_SIZE, -2 * PADDING_SIZE - keyTextBounds.height);
+		dataText.setPosition(sf::Vector2f(mousePos));
+
+		sf::RectangleShape rectangle;
+		rectangle.setFillColor(sf::Color(BACKGROUND_COLOR & 0xFFFFFFA0));
+		rectangle.setSize(sf::Vector2f(std::max(keyTextBounds.width, dataTextBounds.width) + 2 * PADDING_SIZE, keyTextBounds.height + dataTextBounds.height + 4 * PADDING_SIZE));
+		rectangle.setOrigin(-PADDING_SIZE, -PADDING_SIZE);
+		rectangle.setPosition(sf::Vector2f(mousePos));
+
+		window.draw(rectangle);
+		window.draw(keyText);
+		window.draw(dataText);
+	}
 	return;
 }
 
@@ -175,7 +229,7 @@ float AVLdrawer::convertSize(const float& size) {
 }
 
 sf::Vector2f AVLdrawer::convertCoordinate(const float& coordX, const float& coordY) {
-	return sf::Vector2f(convertSize(coordX + curX) + this->windowX + this->width / 2.0, convertSize(coordY + curY) + this->windowY + this->height / 2.0);
+	return sf::Vector2f(convertSize(coordX + curX) + WINDOW_WIDTH / 2.0, convertSize(coordY + curY) + WINDOW_HEIGHT / 2.0);
 }
 
 sf::Vector2f AVLdrawer::getNodeCoordinate(Node* node) {
@@ -183,7 +237,7 @@ sf::Vector2f AVLdrawer::getNodeCoordinate(Node* node) {
 	return this->convertCoordinate(this->getNodeMagic(node) * std::pow(2, this->getHeight() - 1) * VERTEX_SIZE, this->getNodeLayer(node) * VERTEX_SIZE * 3);
 }
 
-void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, const std::string& show) {
+void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, Node*& drawNodeInfo, const std::string& show) {
 	if (node == nullptr) return;
 	sf::Vector2f coordinate = this->getNodeCoordinate(node);
 
@@ -205,15 +259,13 @@ void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, const std::string
 		window.draw(line);
 	}
 	if (coordinate.x > -convertSize(VERTEX_SIZE) && coordinate.x < WINDOW_WIDTH + convertSize(VERTEX_SIZE) && coordinate.y > -convertSize(VERTEX_SIZE)) {
-		sf::CircleShape vertex;
-		vertex.setOutlineThickness(BORDER_SIZE);
-		vertex.setFillColor(sf::Color(BACKGROUND_COLOR));
-		vertex.setOutlineColor(sf::Color(SELECTED_COLOR));
-		vertex.setRadius(this->convertSize(VERTEX_SIZE));
-		sf::FloatRect bounds = vertex.getLocalBounds();
-		vertex.setOrigin(bounds.width / 2.0, bounds.height / 2.0);
-		vertex.setPosition(coordinate);
-		window.draw(vertex);
+		sf::CircleShape circle;
+		circle.setOutlineThickness(BORDER_SIZE);
+		circle.setOutlineColor(sf::Color(SELECTED_COLOR));
+		circle.setRadius(this->convertSize(VERTEX_SIZE));
+		sf::FloatRect bounds = circle.getLocalBounds();
+		circle.setOrigin(bounds.width / 2.0, bounds.height / 2.0);
+		circle.setPosition(coordinate);
 
 		sf::Text text;
 		text.setFont(this->font);
@@ -224,11 +276,19 @@ void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, const std::string
 		bounds = text.getLocalBounds();
 		text.setOrigin(bounds.width / 2.0, bounds.height);
 		text.setPosition(coordinate);
+
+		if (this->mousePos.x > coordinate.x - this->convertSize(VERTEX_SIZE) && this->mousePos.x < coordinate.x + this->convertSize(VERTEX_SIZE) &&
+			this->mousePos.y > coordinate.y - this->convertSize(VERTEX_SIZE) && this->mousePos.y < coordinate.y + this->convertSize(VERTEX_SIZE)) {
+			drawNodeInfo = node;
+			circle.setOutlineColor(sf::Color(HOVER_COLOR));
+			text.setFillColor(sf::Color(HOVER_COLOR));
+		}
+		window.draw(circle);
 		window.draw(text);
 	}
 
-	this->drawNode(window, node->left, show);
-	this->drawNode(window, node->right, show);
+	this->drawNode(window, node->left, drawNodeInfo, show);
+	this->drawNode(window, node->right, drawNodeInfo, show);
 
 	return;
 }
