@@ -7,13 +7,6 @@
 class AVL
 {
 public:
-	uint16_t getHeight();
-
-	void insert(const uint16_t& key, const int& data);
-
-	bool remove(const uint16_t& key);
-
-protected:
 	struct Node {
 		uint16_t key, height = 1;
 		int data;
@@ -30,6 +23,13 @@ protected:
 
 	Node* start = nullptr;
 
+	uint16_t getHeight();
+
+	void insert(const uint16_t& key, const int& data);
+
+	bool remove(const uint16_t& key);
+
+protected:
 	uint16_t getNodeHeight(const Node* node);
 
 	void recalcNodeHeight(Node*& node);

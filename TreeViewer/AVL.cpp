@@ -121,8 +121,8 @@ bool AVL::nodeRemove(Node*& node, const uint16_t& key) {
 					prev = p;
 					p = p->right;
 				}
-				if (prev == node) node->left = nullptr;
-				else prev->right = nullptr;
+				if (prev == node) node->left = p->left;
+				else prev->right = p->left;
 			}
 			else {
 				p = node->right;
@@ -130,13 +130,13 @@ bool AVL::nodeRemove(Node*& node, const uint16_t& key) {
 					prev = p;
 					p = p->left;
 				}
-				if (prev == node) node->right = nullptr;
-				else prev->left = nullptr;
+				if (prev == node) node->right = p->right;
+				else prev->left = p->right;
 			}
 			p->left = q->left;
 			p->right = q->right;
 			node = p;
-			delete(q);
+			delete q;
 		}
 		rt = true;
 	}

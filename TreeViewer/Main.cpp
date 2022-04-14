@@ -123,7 +123,7 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                         std::cout << "Removed node " << num1 << std::endl;
                     }
                     else {
-                        std::cout << "Vertex " << num1 << " cannot be found" << std::endl;
+                        std::cout << "Node " << num1 << " cannot be found" << std::endl;
                     }
                 }
                 else if (mode == "generate") {
@@ -139,11 +139,20 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                         }
                     }
                 }
+                else if (mode == "delete all") {
+                    while (AVLTree->start != nullptr) {
+                        AVLTree->remove(AVLTree->start->key);
+                    }
+                    std::cout << "Deleted all nodes";
+                }
                 num1 = num2 = 0;
                 mode = "key";
             }
             else if (line[i] == 'g') {
                 mode = "generate";
+            }
+            else if (line[i] == 'x') {
+                mode = "delete all";
             }
             else if (mode == "key") {
                 if (line[i] >= '0' && line[i] <= '9') {
