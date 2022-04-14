@@ -20,6 +20,9 @@ uint16_t AVL::getNodeHeight(const Node* node) {
 }
 
 void AVL::recalcNodeHeight(Node*& node) {
+	if (node == nullptr) return;
+	this->recalcNodeHeight(node->left);
+	this->recalcNodeHeight(node->right);
 	uint16_t hLeft = this->getNodeHeight(node->left);
 	uint16_t hRight = this->getNodeHeight(node->right);
 
@@ -32,8 +35,6 @@ void AVL::rightRotate(Node*& node) {
 	node->left = t->right;
 	t->right = node;
 	node = t;
-
-	this->recalcNodeHeight(t->right);
 	this->recalcNodeHeight(t);
 	return;
 }
@@ -43,8 +44,6 @@ void AVL::leftRotate(Node*& node) {
 	node->right = t->left;
 	t->left = node;
 	node = t;
-
-	this->recalcNodeHeight(t->left);
 	this->recalcNodeHeight(t);
 	return;
 }
@@ -100,27 +99,68 @@ bool AVL::nodeRemove(Node*& node, const uint16_t& key) {
 	}
 	else {
 		// Deleting
-
+		Node* q = node;
+		if (node->left == nullptr && node->right == nullptr) {
+			node = nullptr;
+			delete q;
+		}
+		else if (node->left == nullptr) {
+			node = node->right;
+			delete q;
+		}
+		else if (node->right == nullptr) {
+			node = node->left;
+			delete q;
+		}
+		else {
+			Node* p = node;
+			Node* prev = node;
+			if (this->getNodeHeight(node->left) > this->getNodeHeight(node->right)) {
+				p = node->left;
+				while (p->right != nullptr) {
+					prev = p;
+					p = p->right;
+				}
+				if (prev == node) node->left = nullptr;
+				else prev->right = nullptr;
+			}
+			else {
+				p = node->right;
+				while (p->left != nullptr) {
+					prev = p;
+					p = p->left;
+				}
+				if (prev == node) node->right = nullptr;
+				else prev->left = nullptr;
+			}
+			p->left = q->left;
+			p->right = q->right;
+			node = p;
+			delete(q);
+		}
+		rt = true;
 	}
 
-	// Balancing
-	int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
-	if (balance > 1 && key < node->left->key) {
-		this->rightRotate(node);
+	if (rt && node != nullptr) {
+		this->recalcNodeHeight(node);
+		// Balancing
+		int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
+		if (balance > 1 && this->getNodeHeight(node->left->left) - this->getNodeHeight(node->left->right) >= 0) {
+			this->rightRotate(node);
+		}
+		else if (balance < -1 && this->getNodeHeight(node->right->left) - this->getNodeHeight(node->right->right) <= 0) {
+			this->leftRotate(node);
+		}
+		// Big balancing
+		else if (balance > 1 && this->getNodeHeight(node->left->left) - this->getNodeHeight(node->left->right) < 0) {
+			this->leftRotate(node->left);
+			this->rightRotate(node);
+		}
+		else if (balance < -1 && this->getNodeHeight(node->right->left) - this->getNodeHeight(node->right->right) > 0) {
+			this->rightRotate(node->right);
+			this->leftRotate(node);
+		}
 	}
-	else if (balance < -1 && key > node->right->key) {
-		this->leftRotate(node);
-	}
-	// Big balancing
-	else if (balance > 1 && key > node->left->key) {
-		this->leftRotate(node->left);
-		this->rightRotate(node);
-	}
-	else if (balance < -1 && key < node->right->key) {
-		this->rightRotate(node->right);
-		this->leftRotate(node);
-	}
-
 	return rt;
 }
 

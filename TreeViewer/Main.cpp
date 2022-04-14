@@ -51,6 +51,8 @@ bool save(const std::wstring& path) {
 }
 
 void onStart(sf::RenderWindow& window) {
+    std::srand(std::time(nullptr));
+
     font.loadFromFile("resourses/Consolas.ttf");
     //sf::Image icon;
     //icon.loadFromFile("resourses/icon.png");
@@ -115,18 +117,33 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                     catch (std::string err) {
                         std::cout << num1 << ":" << num2 << " - " << err << std::endl;
                     }
-                    num1 = num2 = 0;
-                    mode = "key";
                 }
                 else if (mode == "key") {
-                    if (!AVLTree->remove(num1)) {
-                        std::cout << "Removed node " << num1 << ':' << num2 << std::endl;
+                    if (AVLTree->remove(num1)) {
+                        std::cout << "Removed node " << num1 << std::endl;
                     }
                     else {
                         std::cout << "Vertex " << num1 << " cannot be found" << std::endl;
                     }
-                    num1 = 0;
                 }
+                else if (mode == "generate") {
+                    for (uint16_t i = 0; i < num1; ++i) {
+                        uint16_t key = std::rand();
+                        int data = std::rand();
+                        try {
+                            AVLTree->insert(key, data);
+                            std::cout << "Generated node " << key << ":" << data << std::endl;
+                        }
+                        catch (std::string err) {
+                            std::cout << "Failed to generate node " << key << ":" << data << " - " << err << std::endl;
+                        }
+                    }
+                }
+                num1 = num2 = 0;
+                mode = "key";
+            }
+            else if (line[i] == 'g') {
+                mode = "generate";
             }
             else if (mode == "key") {
                 if (line[i] >= '0' && line[i] <= '9') {
@@ -146,6 +163,15 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                 }
                 else if (line[i] == '-') {
                     negativeData = true;
+                }
+                else {
+                    std::cout << "Unexpected symbol at position " << i + 1 << " (" << line[i] << ")" << std::endl;
+                    break;
+                }
+            }
+            else if (mode == "generate") {
+                if (line[i] >= '0' && line[i] <= '9') {
+                    num1 = num1 * 10 + line[i] - '0';
                 }
                 else {
                     std::cout << "Unexpected symbol at position " << i + 1 << " (" << line[i] << ")" << std::endl;
@@ -178,19 +204,6 @@ void eventProcessing(sf::RenderWindow& window) {
 }
 
 int main() {
-    // Test tree
-    /*for (uint16_t i = 0; i < 20; ++i) {
-        uint16_t key = std::rand();
-        int data = std::rand();
-        try {
-            AVLTree->insert(key, data);
-            std::cout << i + 1 << " - Added node " << key << ':' << data << std::endl;
-        }
-        catch (std::string err) {
-            std::cout << i + 1 << " - Node with key " << key << " is already exists" << std::endl;
-        }
-    }*/
-
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tree Viewer [0.3]", sf::Style::Close);
     onStart(window);
 
