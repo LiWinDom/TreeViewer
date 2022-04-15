@@ -6,12 +6,12 @@ uint16_t AVL::getHeight() {
 }
 
 void AVL::insert(const uint16_t& key, const int& data) {
-	this->nodeInsert(this->start, key, data);
+	this->insertNode(this->start, key, data);
 	return;
 }
 
 bool AVL::remove(const uint16_t& key) {
-	return this->nodeRemove(this->start, key);
+	return this->removeNode(this->start, key);
 }
 
 uint16_t AVL::getNodeHeight(const Node* node) {
@@ -48,7 +48,7 @@ void AVL::leftRotate(Node*& node) {
 	return;
 }
 
-void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
+void AVL::insertNode(Node*& node, const uint16_t& key, const int& data) {
 	if (node == nullptr) {
 		node = new Node(key, data);
 		return;
@@ -56,10 +56,10 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 
 	// Searching position
 	if (key < node->key) {
-		this->nodeInsert(node->left, key, data);
+		this->insertNode(node->left, key, data);
 	}
 	else if (key > node->key) {
-		this->nodeInsert(node->right, key, data);
+		this->insertNode(node->right, key, data);
 	}
 	else {
 		throw std::string("Equal keys are not allowed");
@@ -86,16 +86,16 @@ void AVL::nodeInsert(Node*& node, const uint16_t& key, const int& data) {
 	return;
 }
 
-bool AVL::nodeRemove(Node*& node, const uint16_t& key) {
+bool AVL::removeNode(Node*& node, const uint16_t& key) {
 	if (node == nullptr) return false;
 
 	// Searching node
 	bool rt = false;
 	if (key < node->key) {
-		rt = this->nodeRemove(node->left, key);
+		rt = this->removeNode(node->left, key);
 	}
 	else if (key > node->key) {
-		rt = this->nodeRemove(node->right, key);
+		rt = this->removeNode(node->right, key);
 	}
 	else {
 		// Deleting
@@ -204,7 +204,7 @@ float AVLdrawer::getNodeMagic(Node* node) {
 	return total;
 }
 
-void AVLdrawer::eventProcessing(const sf::Event& event, const sf::Vector2i& mousePos) {
+void AVLdrawer::eventProcessing(sf::RenderWindow& window, const sf::Event& event) {
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Equal || event.key.code == sf::Keyboard::Add) {
 			if (this->needScale < 6) ++this->needScale;
@@ -225,7 +225,54 @@ void AVLdrawer::eventProcessing(const sf::Event& event, const sf::Vector2i& mous
 			this->needX -= 10 / scales[needScale];
 		}
 	}
-	this->mousePos = mousePos;
+
+	static std::string mouseButton = "none";
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && (mouseButton == "none" || mouseButton == "left" || mouseButton == "leftMove")) {
+		if (mouseButton == "none") {
+			mouseButton = "left";
+		}
+		else if (this->mousePos - sf::Mouse::getPosition(window) != sf::Vector2i(0, 0)) {
+			this->needX -= (this->mousePos - sf::Mouse::getPosition(window)).x / this->curScale;
+			this->needY -= (this->mousePos - sf::Mouse::getPosition(window)).y / this->curScale;
+			mouseButton = "leftMove";
+		}
+	}
+	else if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && mouseButton == "none") {
+		mouseButton = "right";
+	}
+	else if (event.type == sf::Event::MouseButtonReleased) {
+		if (mouseButton == "right") {
+			Node* q = this->start;
+			sf::Vector2f coordinate = this->getNodeCoordinate(q);
+			while (coordinate.y - this->convertSize(VERTEX_SIZE) < this->mousePos.y && q != nullptr) {
+				if (coordinate.x + convertSize(VERTEX_SIZE) < this->mousePos.x) {
+					q = q->right;
+					coordinate = this->getNodeCoordinate(q);
+					continue;
+				}
+				else if (coordinate.x - convertSize(VERTEX_SIZE) > this->mousePos.x) {
+					q = q->left;
+					coordinate = this->getNodeCoordinate(q);
+					continue;
+				}
+				else if (coordinate.x + convertSize(VERTEX_SIZE) > this->mousePos.x && coordinate.x - convertSize(VERTEX_SIZE) < this->mousePos.x &&
+					coordinate.y + convertSize(VERTEX_SIZE) > this->mousePos.y && coordinate.y - convertSize(VERTEX_SIZE) < this->mousePos.y) {
+					this->remove(q->key);
+				}
+				break;
+			}
+		}
+		mouseButton = "none";
+	}
+	else if (event.type == sf::Event::MouseWheelMoved) {
+		if (event.mouseWheel.delta > 0 && needScale < 6) {
+			++needScale;
+		}
+		else if (event.mouseWheel.delta < 0 && needScale > 0) {
+			--needScale;
+		}
+	}
+	this->mousePos = sf::Mouse::getPosition(window);
 	return;
 }
 

@@ -99,6 +99,7 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
     else if (operationButton->on(x, y)) {
         std::string line;
         std::getline(std::cin, line);
+        if (line[line.size() - 1] != ';') line.push_back(';');
 
         int num1 = 0, num2 = 0;
         bool negativeData = false;
@@ -143,7 +144,7 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                     while (AVLTree->start != nullptr) {
                         AVLTree->remove(AVLTree->start->key);
                     }
-                    std::cout << "Deleted all nodes";
+                    std::cout << "Deleted all nodes" << std::endl;
                 }
                 num1 = num2 = 0;
                 mode = "key";
@@ -194,20 +195,36 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
 
 void eventProcessing(sf::RenderWindow& window) {
     sf::Event event;
+    static std::string mouseButton = "none";
+    static sf::Vector2i lastMousePos;
 
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) window.close();
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        if (mousePos.x < 0 || mousePos.y < 0 || mousePos.x > window.getSize().x || mousePos.y > window.getSize().y) continue;
         for (uint8_t i = 0; i < buttons.size(); ++i) {
             buttons[i]->on(mousePos.x, mousePos.y);
         }
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            clickEvent(window, mousePos.x, mousePos.y);
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && (mouseButton == "none" || mouseButton == "left" || mouseButton == "leftMove")) {
+            if (mouseButton == "none") {
+                mouseButton = "left";
+            }
+            else if (lastMousePos - sf::Mouse::getPosition() != sf::Vector2i(0, 0)) {
+                mouseButton = "leftMove";
+            }
+            lastMousePos = sf::Mouse::getPosition();
+        }
+        else if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && mouseButton == "none") {
+            mouseButton = "right";
+        }
+        else if (event.type == sf::Event::MouseButtonReleased) {
+            if (mouseButton == "left") {
+                clickEvent(window, mousePos.x, mousePos.y);
+            }
+            mouseButton = "none";
         }
 
-        if (selected == "AVL") AVLTree->eventProcessing(event, mousePos);
+        if (selected == "AVL") AVLTree->eventProcessing(window, event);
     }
     return;
 }

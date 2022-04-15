@@ -38,9 +38,9 @@ protected:
 
 	void leftRotate(Node*& node);
 
-	void nodeInsert(Node*& node, const uint16_t& key, const int& data);
+	void insertNode(Node*& node, const uint16_t& key, const int& data);
 
-	bool nodeRemove(Node*& node, const uint16_t& key);
+	bool removeNode(Node*& node, const uint16_t& key);
 
 	uint16_t getNodeLayer(Node* node);
 };
@@ -52,13 +52,13 @@ public:
 
 	void draw(sf::RenderWindow& window, const std::string& show = "key");
 
-	void eventProcessing(const sf::Event& event, const sf::Vector2i& mousePos);
+	void eventProcessing(sf::RenderWindow& window, const sf::Event& event);
 
 private:
-	float needX = 0, needY = 0;
 	float curX = 0, curY = 0;
-	uint8_t needScale = 5;
+	float needX = 0, needY = 0;
 	float curScale = 1;
+	uint8_t needScale = 5;
 	const float scales[7] = { 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2};
 
 	sf::Vector2i mousePos;
