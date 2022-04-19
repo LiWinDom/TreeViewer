@@ -5,11 +5,23 @@
 #include "Config.h"
 #include "Error.h"
 
-class AVL
+template <typename T1, typename T2, typename T3>
+struct tuple {
+    tuple(const T1& first, const T2& second, const T3& third) {
+        this->first = first;
+        this->second = second;
+        this->third = third;
+    }
+    T1 first;
+    T2 second;
+    T3 third;
+};
+
+class Treap
 {
 public:
 	struct Node {
-		uint16_t key, height = 1;
+		uint16_t key, priority = std::rand();
 		int data;
 
 		Node(const uint16_t& key, const int& data) {
@@ -24,32 +36,22 @@ public:
 
 	Node* start = nullptr;
 
-	uint16_t getHeight();
-
 	void insert(const uint16_t& key, const int& data);
 
 	void remove(const uint16_t& key);
 
 protected:
-	uint16_t getNodeHeight(const Node* node);
+    Node* merge(Node* t1, Node* t2);
 
-	void recalcNodeHeight(Node*& node);
-
-	void rightRotate(Node*& node);
-
-	void leftRotate(Node*& node);
-
-	void insertNode(Node*& node, const uint16_t& key, const int& data);
-
-	void removeNode(Node*& node, const uint16_t& key);
+	tuple<Node*, Node*, Node*> split(Node* t, const int& key);
 
 	uint16_t getNodeLayer(Node* node);
 };
 
 
-class AVLDrawer : public AVL {
+class TreapDrawer : public Treap {
 public:
-	AVLDrawer();
+	TreapDrawer();
 
 	void draw(sf::RenderWindow& window, const std::string& show = "key");
 
@@ -60,7 +62,7 @@ private:
 	float needX = 0, needY = 0;
 	float curScale = 1;
 	uint8_t needScale = 5;
-	const float scales[7] = {0.05, 0.1, 0.2, 0.3, 0.5, 1, 2};
+	const float scales[7] = { 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2 };
 
 	sf::Vector2i mousePos;
 	sf::Font font;

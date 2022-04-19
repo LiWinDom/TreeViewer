@@ -10,8 +10,9 @@ void AVL::insert(const uint16_t& key, const int& data) {
 	return;
 }
 
-bool AVL::remove(const uint16_t& key) {
-	return this->removeNode(this->start, key);
+void AVL::remove(const uint16_t& key) {
+	this->removeNode(this->start, key);
+	return;
 }
 
 uint16_t AVL::getNodeHeight(const Node* node) {
@@ -62,7 +63,7 @@ void AVL::insertNode(Node*& node, const uint16_t& key, const int& data) {
 		this->insertNode(node->right, key, data);
 	}
 	else {
-		throw std::string("Equal keys are not allowed");
+		throw new Error("AVL", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
 	}
 	this->recalcNodeHeight(node);
 
@@ -86,16 +87,17 @@ void AVL::insertNode(Node*& node, const uint16_t& key, const int& data) {
 	return;
 }
 
-bool AVL::removeNode(Node*& node, const uint16_t& key) {
-	if (node == nullptr) return false;
+void AVL::removeNode(Node*& node, const uint16_t& key) {
+	if (node == nullptr) {
+		throw new Error("AVL", "Node " + std::to_string(key) + " cannot be found");
+	}
 
 	// Searching node
-	bool rt = false;
 	if (key < node->key) {
-		rt = this->removeNode(node->left, key);
+		this->removeNode(node->left, key);
 	}
 	else if (key > node->key) {
-		rt = this->removeNode(node->right, key);
+		this->removeNode(node->right, key);
 	}
 	else {
 		// Deleting
@@ -138,10 +140,9 @@ bool AVL::removeNode(Node*& node, const uint16_t& key) {
 			node = p;
 			delete q;
 		}
-		rt = true;
 	}
 
-	if (rt && node != nullptr) {
+	if (node != nullptr) {
 		this->recalcNodeHeight(node);
 		// Balancing
 		int8_t balance = this->getNodeHeight(node->left) - this->getNodeHeight(node->right);
@@ -161,7 +162,7 @@ bool AVL::removeNode(Node*& node, const uint16_t& key) {
 			this->leftRotate(node);
 		}
 	}
-	return rt;
+	return;
 }
 
 uint16_t AVL::getNodeLayer(Node* node) {
@@ -178,12 +179,12 @@ uint16_t AVL::getNodeLayer(Node* node) {
 }
 
 
-AVLdrawer::AVLdrawer() {
+AVLDrawer::AVLDrawer() {
 	font.loadFromFile("resourses/Consolas.ttf");
 	return;
 }
 
-float AVLdrawer::getNodeMagic(Node* node) {
+float AVLDrawer::getNodeMagic(Node* node) {
 	if (node == nullptr) return 0;
 
 	float mult = 1;
@@ -204,7 +205,7 @@ float AVLdrawer::getNodeMagic(Node* node) {
 	return total;
 }
 
-void AVLdrawer::eventProcessing(sf::RenderWindow& window, const sf::Event& event) {
+std::pair<bool, uint16_t> AVLDrawer::eventProcessing(sf::RenderWindow& window, const sf::Event& event) {
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Equal || event.key.code == sf::Keyboard::Add) {
 			if (this->needScale < 6) ++this->needScale;
@@ -227,6 +228,7 @@ void AVLdrawer::eventProcessing(sf::RenderWindow& window, const sf::Event& event
 	}
 
 	static std::string mouseButton = "none";
+	std::pair<bool, uint16_t> action(false, 0);
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && (mouseButton == "none" || mouseButton == "left" || mouseButton == "leftMove")) {
 		if (mouseButton == "none") {
 			mouseButton = "left";
@@ -257,7 +259,7 @@ void AVLdrawer::eventProcessing(sf::RenderWindow& window, const sf::Event& event
 				}
 				else if (coordinate.x + convertSize(VERTEX_SIZE) > this->mousePos.x && coordinate.x - convertSize(VERTEX_SIZE) < this->mousePos.x &&
 					coordinate.y + convertSize(VERTEX_SIZE) > this->mousePos.y && coordinate.y - convertSize(VERTEX_SIZE) < this->mousePos.y) {
-					this->remove(q->key);
+					action = std::pair<bool, uint16_t>(true, q->key);
 				}
 				break;
 			}
@@ -273,10 +275,10 @@ void AVLdrawer::eventProcessing(sf::RenderWindow& window, const sf::Event& event
 		}
 	}
 	this->mousePos = sf::Mouse::getPosition(window);
-	return;
+	return action;
 }
 
-void AVLdrawer::draw(sf::RenderWindow& window, const std::string& show) {
+void AVLDrawer::draw(sf::RenderWindow& window, const std::string& show) {
 	this->curScale += (scales[needScale] - this->curScale) / 5.0;
 	this->curX += (this->needX - this->curX) / 5.0;
 	this->curY += (this->needY - this->curY) / 5.0;
@@ -311,20 +313,20 @@ void AVLdrawer::draw(sf::RenderWindow& window, const std::string& show) {
 	return;
 }
 
-float AVLdrawer::convertSize(const float& size) {
+float AVLDrawer::convertSize(const float& size) {
 	return size * this->curScale;
 }
 
-sf::Vector2f AVLdrawer::convertCoordinate(const float& coordX, const float& coordY) {
+sf::Vector2f AVLDrawer::convertCoordinate(const float& coordX, const float& coordY) {
 	return sf::Vector2f(convertSize(coordX + curX) + WINDOW_WIDTH / 2.0, convertSize(coordY + curY) + WINDOW_HEIGHT / 2.0);
 }
 
-sf::Vector2f AVLdrawer::getNodeCoordinate(Node* node) {
+sf::Vector2f AVLDrawer::getNodeCoordinate(Node* node) {
 	if (node == nullptr) return sf::Vector2f(0, 0);
 	return this->convertCoordinate(this->getNodeMagic(node) * std::pow(2, this->getHeight() - 1) * VERTEX_SIZE, this->getNodeLayer(node) * VERTEX_SIZE * 3);
 }
 
-void AVLdrawer::drawNode(sf::RenderWindow& window, Node* node, Node*& drawNodeInfo, const std::string& show) {
+void AVLDrawer::drawNode(sf::RenderWindow& window, Node* node, Node*& drawNodeInfo, const std::string& show) {
 	if (node == nullptr) return;
 	sf::Vector2f coordinate = this->getNodeCoordinate(node);
 

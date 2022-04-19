@@ -5,20 +5,25 @@
 #include <SFML/Graphics.hpp>
 
 #include "Config.h"
+#include "Error.h"
 #include "AVL.h"
+#include "Treap.h"
 #include "Button.h"
 
 std::string selected = "AVL";
 sf::Font font;
 
-AVLdrawer* AVLTree = new AVLdrawer();
+AVLDrawer* AVLTree = new AVLDrawer();
+TreapDrawer* TreapTree = new TreapDrawer();
 
 Button* AVLButton = new Button(PADDING_SIZE, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 3 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "AVL");
 Button* RBButton = new Button(4 * PADDING_SIZE + TEXT_SIZE * 3, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 2 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "RB");
+Button* treapButton = new Button(7 * PADDING_SIZE + TEXT_SIZE * 5, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 5 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "Treap");
+Button* splayButton = new Button(10 * PADDING_SIZE + TEXT_SIZE * 10, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 5 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "Splay");
 
 Button* operationButton = new Button(WINDOW_WIDTH - TEXT_SIZE * 9 - 3 * PADDING_SIZE, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 9 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "Operation");
 
-std::vector<Button*> buttons = {AVLButton, RBButton, operationButton};
+std::vector<Button*> buttons = {AVLButton, RBButton, treapButton, splayButton, operationButton};
 
 bool load(const std::wstring& path) {
     std::ifstream file;
@@ -63,21 +68,17 @@ void onStart(sf::RenderWindow& window) {
     return;
 }
 
-void drawButtons(sf::RenderWindow& window) {
-    for (uint8_t i = 0; i < buttons.size(); ++i) {
-        buttons[i]->draw(window);
-    }
-    return;
-}
-
 void display(sf::RenderWindow& window) {
     window.clear(sf::Color(BACKGROUND_COLOR));
 
     if (selected == "AVL") AVLTree->draw(window);
+    else if (selected == "treap") TreapTree->draw(window);
 
-    drawButtons(window);
+    for (uint8_t i = 0; i < buttons.size(); ++i) {
+        buttons[i]->draw(window);
+    }
+
     window.display();
-
     return;
 }
 
@@ -96,6 +97,20 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
         RBButton->select();
         selected = "RB";
     }
+    else if (treapButton->on(x, y)) {
+        for (uint8_t i = 0; i < buttons.size(); ++i) {
+            buttons[i]->select(false);
+        }
+        treapButton->select();
+        selected = "treap";
+    }
+    else if (splayButton->on(x, y)) {
+        for (uint8_t i = 0; i < buttons.size(); ++i) {
+            buttons[i]->select(false);
+        }
+        splayButton->select();
+        selected = "splay";
+    }
     else if (operationButton->on(x, y)) {
         std::string line;
         std::getline(std::cin, line);
@@ -113,18 +128,23 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                     }
                     try {
                         AVLTree->insert(num1, num2);
+                        TreapTree->insert(num1, num2);
                         std::cout << "Added node " << num1 << ':' << num2 << std::endl;
                     }
-                    catch (std::string err) {
-                        std::cout << num1 << ":" << num2 << " - " << err << std::endl;
+                    catch (Error* err) {
+                        std::cout << err->source << ": " << err->message << std::endl;
+                        delete err;
                     }
                 }
                 else if (mode == "key") {
-                    if (AVLTree->remove(num1)) {
+                    try {
+                        AVLTree->remove(num1);
+                        TreapTree->remove(num1);
                         std::cout << "Removed node " << num1 << std::endl;
                     }
-                    else {
-                        std::cout << "Node " << num1 << " cannot be found" << std::endl;
+                    catch (Error* err) {
+                        std::cout << err->source << ": " << err->message << std::endl;
+                        delete err;
                     }
                 }
                 else if (mode == "generate") {
@@ -133,16 +153,21 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                         int data = std::rand();
                         try {
                             AVLTree->insert(key, data);
+                            TreapTree->insert(key, data);
                             std::cout << "Generated node " << key << ":" << data << std::endl;
                         }
-                        catch (std::string err) {
-                            std::cout << "Failed to generate node " << key << ":" << data << " - " << err << std::endl;
+                        catch (Error* err) {
+                            std::cout << err->source << ": " << err->message << std::endl;
+                            delete err;
                         }
                     }
                 }
                 else if (mode == "delete all") {
                     while (AVLTree->start != nullptr) {
                         AVLTree->remove(AVLTree->start->key);
+                    }
+                    while (TreapTree->start != nullptr) {
+                        TreapTree->remove(TreapTree->start->key);
                     }
                     std::cout << "Deleted all nodes" << std::endl;
                 }
@@ -224,7 +249,14 @@ void eventProcessing(sf::RenderWindow& window) {
             mouseButton = "none";
         }
 
-        if (selected == "AVL") AVLTree->eventProcessing(window, event);
+        std::pair<bool, uint16_t> action;
+        if (selected == "AVL") action = AVLTree->eventProcessing(window, event);
+        if (selected == "treap") action = TreapTree->eventProcessing(window, event);
+
+        if (action.first) {
+            AVLTree->remove(action.second);
+            TreapTree->remove(action.second);
+        }
     }
     return;
 }

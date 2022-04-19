@@ -5,9 +5,12 @@
     <ClCompile Include="Config.h" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="AVL.cpp" />
+    <ClCompile Include="Treap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h" />
     <ClInclude Include="AVL.h" />
+    <ClInclude Include="Treap.h" />
+    <ClInclude Include="Error.h" />
   </ItemGroup>
 </Project>
