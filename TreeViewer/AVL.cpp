@@ -169,7 +169,7 @@ uint16_t AVL::getNodeLayer(Node* node) {
 	if (node == nullptr) return 0;
 
 	Node* q = this->start;
-	uint16_t layer = 0;
+	uint16_t layer = 1;
 	while (q->key != node->key) {
 		if (node->key < q->key) q = q->left;
 		else if (node->key > q->key) q = q->right;

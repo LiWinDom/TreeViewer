@@ -45,6 +45,8 @@ protected:
 
 	tuple<Node*, Node*, Node*> split(Node* t, const int& key);
 
+	uint16_t getNodeHeight(const Node* node);
+
 	uint16_t getNodeLayer(Node* node);
 };
 
@@ -58,11 +60,11 @@ public:
 	std::pair<bool, uint16_t> eventProcessing(sf::RenderWindow& window, const sf::Event& event);
 
 private:
-	float curX = 0, curY = 0;
-	float needX = 0, needY = 0;
+	float curX = 0, curY = -WINDOW_HEIGHT / 4;
+	float needX = 0, needY = -WINDOW_HEIGHT / 4;
 	float curScale = 1;
 	uint8_t needScale = 5;
-	const float scales[7] = { 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2 };
+	const float scales[7] = {0.05, 0.1, 0.2, 0.3, 0.5, 1, 2};
 
 	sf::Vector2i mousePos;
 	sf::Font font;
