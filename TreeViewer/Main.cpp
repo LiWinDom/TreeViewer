@@ -8,6 +8,7 @@
 #include "Error.h"
 #include "AVL.h"
 #include "Treap.h"
+#include "Splay.h"
 #include "Button.h"
 
 std::string selected = "AVL";
@@ -15,6 +16,7 @@ sf::Font font;
 
 AVLDrawer* AVLTree = new AVLDrawer();
 TreapDrawer* TreapTree = new TreapDrawer();
+SplayDrawer* SplayTree = new SplayDrawer();
 
 Button* AVLButton = new Button(PADDING_SIZE, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 3 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "AVL");
 Button* RBButton = new Button(4 * PADDING_SIZE + TEXT_SIZE * 3, WINDOW_HEIGHT - 3 * PADDING_SIZE - TEXT_SIZE, TEXT_SIZE * 2 + 2 * PADDING_SIZE, TEXT_SIZE + 2 * PADDING_SIZE, "RB");
@@ -73,6 +75,7 @@ void display(sf::RenderWindow& window) {
 
     if (selected == "AVL") AVLTree->draw(window);
     else if (selected == "treap") TreapTree->draw(window);
+    else if (selected == "splay") SplayTree->draw(window);
 
     for (uint8_t i = 0; i < buttons.size(); ++i) {
         buttons[i]->draw(window);
@@ -129,6 +132,7 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                     try {
                         AVLTree->insert(num1, num2);
                         TreapTree->insert(num1, num2);
+                        SplayTree->insert(num1, num2);
                         std::cout << "Added node " << num1 << ':' << num2 << std::endl;
                     }
                     catch (Error* err) {
@@ -140,6 +144,7 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                     try {
                         AVLTree->remove(num1);
                         TreapTree->remove(num1);
+                        SplayTree->remove(num1);
                         std::cout << "Removed node " << num1 << std::endl;
                     }
                     catch (Error* err) {
@@ -154,6 +159,7 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                         try {
                             AVLTree->insert(key, data);
                             TreapTree->insert(key, data);
+                            SplayTree->insert(key, data);
                             std::cout << "Generated node " << key << ":" << data << std::endl;
                         }
                         catch (Error* err) {
@@ -165,9 +171,8 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                 else if (mode == "delete all") {
                     while (AVLTree->start != nullptr) {
                         AVLTree->remove(AVLTree->start->key);
-                    }
-                    while (TreapTree->start != nullptr) {
                         TreapTree->remove(TreapTree->start->key);
+                        SplayTree->remove(SplayTree->start->key);
                     }
                     std::cout << "Deleted all nodes" << std::endl;
                 }
@@ -252,10 +257,12 @@ void eventProcessing(sf::RenderWindow& window) {
         std::pair<bool, uint16_t> action;
         if (selected == "AVL") action = AVLTree->eventProcessing(window, event);
         if (selected == "treap") action = TreapTree->eventProcessing(window, event);
+        if (selected == "splay") action = SplayTree->eventProcessing(window, event);
 
         if (action.first) {
             AVLTree->remove(action.second);
             TreapTree->remove(action.second);
+            SplayTree->remove(action.second);
         }
     }
     return;

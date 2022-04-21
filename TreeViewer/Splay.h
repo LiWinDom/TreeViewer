@@ -29,9 +29,11 @@ public:
 	void remove(const uint16_t& key);
 
 protected:
-	void splay(Node* node, const uint16_t& key);
+	void splay(Node*& node, const uint16_t& key);
 
 	Node* merge(Node* t1, Node* t2);
+
+	tuple<Node*, Node*, Node*> split(Node* t, const int& key);
 
 	uint16_t getNodeHeight(const Node* node);
 

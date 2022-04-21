@@ -1,41 +1,34 @@
 #include "Splay.h"
 
 void Splay::insert(const uint16_t& key, const int& data) {
-	Node* q = this->start;
-	while (q != nullptr) {
-		if (q->key == key) {
-			throw new Error("Splay", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
-		}
-		if (q == nullptr) {
-			throw new Error("Splay", "Node " + std::to_string(key) + " cannot be found");
-		}
-		if (key < q->key) q = q->left;
-		else if (key > q->key) q = q->right;
-	}
 	tuple<Node*, Node*, Node*> splt = this->split(this->start, key);
 	if (splt.second != nullptr) {
 		this->start = this->merge(splt.first, this->merge(splt.second, splt.third));
 		throw new Error("Splay", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
 	}
-	this->start = this->merge(splt.first, this->merge(new Node(key, data), splt.third));
+
+	Node* q = new Node(key, data);
+	q->left = splt.first;
+	q->right = splt.third;
+	this->start = q;
 	return;
 }
 
 void Splay::remove(const uint16_t& key) {
-	try {
+	//try {
 		this->splay(this->start, key);
-	}
-	catch (Error* err) {
-		delete err;
-		throw new Error("Splay", "Node " + std::to_string(key) + " cannot be found");
-	}
+	//}
+	//catch (Error* err) {
+	//	delete err;
+	//	throw new Error("Splay", "Node " + std::to_string(key) + " cannot be found");
+	//}
 	Node* q = this->start;
 	this->start = this->merge(q->left, q->right);
 	delete q;
 	return;
 }
 
-void Splay::splay(Node* node, const uint16_t& key) {
+void Splay::splay(Node*& node, const uint16_t& key) {
 	if (node == nullptr) {
 		throw new Error("Splay", "Node " + std::to_string(key) + " cannot be found");
 	}
@@ -44,39 +37,103 @@ void Splay::splay(Node* node, const uint16_t& key) {
 		this->splay(node->left, key);
 		if (node->left->key == key) {
 			if (node->key == start->key) {
-				Node* q = this->start;
-				this->start = node;
+				Node* q = node;
+				node = node->left;
 				q->left = node->right;
 				node->right = q;
 			}
 		}
 		else {
-
+			Node* q, *p;
+			if (key < node->left->key) {
+				q = node->left;
+				node->left = q->right;
+				q->right = node;
+				p = q->left;
+				q->left = p->right;
+				p->right = q;
+				node = p;
+			}
+			else if (key > node->left->key) {
+				q = node->left;
+				p = q->right;
+				q->right = p->left;
+				p->left = q;
+				node->left = p->right;
+				p->right = node;
+				node = p;
+			}
 		}
 	}
 	else if (key > node->key) {
 		this->splay(node->right, key);
 		if (node->right->key == key) {
 			if (node->key == start->key) {
-				Node* q = this->start;
-				this->start = node;
+				Node* q = node;
+				node = node->right;
 				q->right = node->left;
 				node->left = q;
 			}
 		}
 		else {
-
+			Node* q, *p;
+			if (key < node->right->key) {
+				q = node->right;
+				p = q->left;
+				q->left = p->right;
+				p->right = q;
+				node->right = p->left;
+				p->left = node;
+				node = p;
+			}
+			else if (key > node->right->key) {
+				q = node->right;
+				node->right = q->left;
+				q->left = node;
+				p = q->right;
+				q->right = p->left;
+				p->left = q;
+				node = p;
+			}
 		}
 	}
 	return;
 }
 
 Splay::Node* Splay::merge(Node* t1, Node* t2) {
+	if (t1 == nullptr) return t2;
+	if (t2 == nullptr) return t1;
 	Node* q = t1;
 	while (q->right != nullptr) q = q->right;
-	this->splay(q);
+	this->splay(t1, q->key);
 	q->right = t2;
 	return q;
+}
+
+tuple<Splay::Node*, Splay::Node*, Splay::Node*> Splay::split(Node* t, const int& key) {
+	if (t == nullptr) return tuple<Node*, Node*, Node*>(nullptr, nullptr, nullptr);
+	Node* q = t;
+	while (q->key != key) {
+		if (key > q->key) q = q->right;
+		else if (key < q->key) {
+			if (q->left == nullptr || q->left->key < key) break;
+			q = q->left;
+		}
+		if (q == nullptr) {
+			return tuple<Node*, Node*, Node*>(t, nullptr, nullptr);
+		}
+	}
+	this->splay(t, q->key);
+	if (t->key != key) {
+		Node* left = t->left;
+		t->left = nullptr;
+		return tuple<Node*, Node*, Node*>(left, nullptr, t);
+	}
+	Node* left = t->left;
+	Node* right = t->right;
+	t->left = nullptr;
+	t->right = nullptr;
+	return tuple<Node*, Node*, Node*>(left, t, right);
 }
 
 uint16_t Splay::getNodeHeight(const Node* node) {
@@ -205,33 +262,28 @@ void SplayDrawer::draw(sf::RenderWindow& window, const std::string& show) {
 	Node* showInfoNode = nullptr;
 	this->drawNode(window, this->start, showInfoNode, show);
 	if (showInfoNode != nullptr) {
-		sf::Text keyText, prioText, dataText;
+		sf::Text keyText, dataText;
 		keyText.setFont(this->font);
 		keyText.setCharacterSize(TEXT_SIZE);
 		keyText.setFillColor(sf::Color(SELECTED_COLOR));
-		dataText = prioText = keyText;
+		dataText = keyText;
 		keyText.setString("Key: " + std::to_string(showInfoNode->key));
-		prioText.setString("Priority: " + std::to_string(showInfoNode->priority));
 		dataText.setString("Data: " + std::to_string(showInfoNode->data));
 		sf::FloatRect keyTextBounds = keyText.getLocalBounds();
-		sf::FloatRect prioTextBounds = prioText.getLocalBounds();
 		sf::FloatRect dataTextBounds = dataText.getLocalBounds();
 		keyText.setOrigin(-PADDING_SIZE, -PADDING_SIZE);
 		keyText.setPosition(sf::Vector2f(mousePos));
-		prioText.setOrigin(-PADDING_SIZE, -2 * PADDING_SIZE - keyTextBounds.height);
-		prioText.setPosition(sf::Vector2f(mousePos));
-		dataText.setOrigin(-PADDING_SIZE, -2 * PADDING_SIZE - keyTextBounds.height - prioTextBounds.height);
+		dataText.setOrigin(-PADDING_SIZE, -2 * PADDING_SIZE - keyTextBounds.height);
 		dataText.setPosition(sf::Vector2f(mousePos));
 
 		sf::RectangleShape rectangle;
 		rectangle.setFillColor(sf::Color(BACKGROUND_COLOR & 0xFFFFFFA0));
-		rectangle.setSize(sf::Vector2f(std::max(keyTextBounds.width, std::max(prioTextBounds.width, dataTextBounds.width)) + 2 * PADDING_SIZE, keyTextBounds.height + prioTextBounds.height + dataTextBounds.height + 4 * PADDING_SIZE));
+		rectangle.setSize(sf::Vector2f(std::max(keyTextBounds.width, dataTextBounds.width) + 2 * PADDING_SIZE, keyTextBounds.height + dataTextBounds.height + 4 * PADDING_SIZE));
 		rectangle.setOrigin(-PADDING_SIZE, -PADDING_SIZE);
 		rectangle.setPosition(sf::Vector2f(mousePos));
 
 		window.draw(rectangle);
 		window.draw(keyText);
-		window.draw(prioText);
 		window.draw(dataText);
 	}
 	return;
