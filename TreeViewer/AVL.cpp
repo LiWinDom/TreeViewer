@@ -63,7 +63,7 @@ void AVL::insertNode(Node*& node, const uint16_t& key, const int& data) {
 		this->insertNode(node->right, key, data);
 	}
 	else {
-		throw new Error("AVL", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
+		throw Error("AVL", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
 	}
 	this->recalcNodeHeight(node);
 
@@ -89,7 +89,7 @@ void AVL::insertNode(Node*& node, const uint16_t& key, const int& data) {
 
 void AVL::removeNode(Node*& node, const uint16_t& key) {
 	if (node == nullptr) {
-		throw new Error("AVL", "Node " + std::to_string(key) + " cannot be found");
+		throw Error("AVL", "Node " + std::to_string(key) + " cannot be found");
 	}
 
 	// Searching node

@@ -4,7 +4,7 @@ void Splay::insert(const uint16_t& key, const int& data) {
 	tuple<Node*, Node*, Node*> splt = this->split(this->start, key);
 	if (splt.second != nullptr) {
 		this->start = this->merge(splt.first, this->merge(splt.second, splt.third));
-		throw new Error("Splay", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
+		throw Error("Splay", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
 	}
 
 	Node* q = new Node(key, data);
@@ -15,28 +15,25 @@ void Splay::insert(const uint16_t& key, const int& data) {
 }
 
 void Splay::remove(const uint16_t& key) {
-	//try {
-		this->splay(this->start, key);
-	//}
-	//catch (Error* err) {
-	//	delete err;
-	//	throw new Error("Splay", "Node " + std::to_string(key) + " cannot be found");
-	//}
+	this->splay(this->start, key);
+	if (this->start->key != key) {
+		throw Error("Splay", "Node " + std::to_string(key) + " cannot be found");
+	}
 	Node* q = this->start;
 	this->start = this->merge(q->left, q->right);
 	delete q;
 	return;
 }
 
-void Splay::splay(Node*& node, const uint16_t& key) {
+void Splay::splay(Node*& node, const uint16_t& key, const bool root) {
 	if (node == nullptr) {
-		throw new Error("Splay", "Node " + std::to_string(key) + " cannot be found");
+		throw Error("Splay", "Node " + std::to_string(key) + " cannot be found");
 	}
 
 	if (key < node->key) {
-		this->splay(node->left, key);
+		this->splay(node->left, key, false);
 		if (node->left->key == key) {
-			if (node->key == start->key) {
+			if (root) {
 				Node* q = node;
 				node = node->left;
 				q->left = node->right;
@@ -66,9 +63,9 @@ void Splay::splay(Node*& node, const uint16_t& key) {
 		}
 	}
 	else if (key > node->key) {
-		this->splay(node->right, key);
+		this->splay(node->right, key, false);
 		if (node->right->key == key) {
-			if (node->key == start->key) {
+			if (root) {
 				Node* q = node;
 				node = node->right;
 				q->right = node->left;
@@ -106,24 +103,33 @@ Splay::Node* Splay::merge(Node* t1, Node* t2) {
 	Node* q = t1;
 	while (q->right != nullptr) q = q->right;
 	this->splay(t1, q->key);
-	q->right = t2;
-	return q;
+	t1->right = t2;
+	return t1;
 }
 
-tuple<Splay::Node*, Splay::Node*, Splay::Node*> Splay::split(Node* t, const int& key) {
+tuple<Splay::Node*, Splay::Node*, Splay::Node*> Splay::split(Node* t, const uint16_t& key) {
 	if (t == nullptr) return tuple<Node*, Node*, Node*>(nullptr, nullptr, nullptr);
+
+	int32_t k = -1;
 	Node* q = t;
-	while (q->key != key) {
-		if (key > q->key) q = q->right;
+	while (q != nullptr) {
+		if (q->key >= key) {
+			if (k == -1) {
+				k = q->key;
+			}
+			k = std::min(k, (int32_t)q->key);
+		}
+		if (key > q->key) {
+			q = q->right;
+		}
 		else if (key < q->key) {
-			if (q->left == nullptr || q->left->key < key) break;
 			q = q->left;
 		}
-		if (q == nullptr) {
-			return tuple<Node*, Node*, Node*>(t, nullptr, nullptr);
-		}
 	}
-	this->splay(t, q->key);
+	if (k == -1) {
+		return tuple<Node*, Node*, Node*>(t, nullptr, nullptr);
+	}
+	this->splay(t, k);
 	if (t->key != key) {
 		Node* left = t->left;
 		t->left = nullptr;

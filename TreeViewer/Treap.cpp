@@ -4,7 +4,7 @@ void Treap::insert(const uint16_t& key, const int& data) {
 	tuple<Node*, Node*, Node*> splt = this->split(this->start, key);
 	if (splt.second != nullptr) {
 		this->start = this->merge(splt.first, this->merge(splt.second, splt.third));
-		throw new Error("Treap", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
+		throw Error("Treap", "Equal keys are not allowed (inserting " + std::to_string(key) + ")");
 	}
 	this->start = this->merge(splt.first, this->merge(new Node(key, data), splt.third));
 	return;
@@ -13,7 +13,7 @@ void Treap::insert(const uint16_t& key, const int& data) {
 void Treap::remove(const uint16_t& key) {
 	tuple<Node*, Node*, Node*> splt = this->split(this->start, key);
 	if (splt.second == nullptr) {
-		throw new Error("Treap", "Node " + std::to_string(key) + " cannot be found");
+		throw Error("Treap", "Node " + std::to_string(key) + " cannot be found");
 	}
 	delete splt.second;
 	this->start = this->merge(splt.first, splt.third);

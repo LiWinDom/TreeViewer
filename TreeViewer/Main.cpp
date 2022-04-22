@@ -135,9 +135,8 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                         SplayTree->insert(num1, num2);
                         std::cout << "Added node " << num1 << ':' << num2 << std::endl;
                     }
-                    catch (Error* err) {
-                        std::cout << err->source << ": " << err->message << std::endl;
-                        delete err;
+                    catch (Error err) {
+                        std::cout << err.source << ": " << err.message << std::endl;
                     }
                 }
                 else if (mode == "key") {
@@ -147,9 +146,8 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                         SplayTree->remove(num1);
                         std::cout << "Removed node " << num1 << std::endl;
                     }
-                    catch (Error* err) {
-                        std::cout << err->source << ": " << err->message << std::endl;
-                        delete err;
+                    catch (Error err) {
+                        std::cout << err.source << ": " << err.message << std::endl;
                     }
                 }
                 else if (mode == "generate") {
@@ -162,9 +160,8 @@ void clickEvent(sf::RenderWindow& window, uint16_t x, uint16_t y) {
                             SplayTree->insert(key, data);
                             std::cout << "Generated node " << key << ":" << data << std::endl;
                         }
-                        catch (Error* err) {
-                            std::cout << err->source << ": " << err->message << std::endl;
-                            delete err;
+                        catch (Error err) {
+                            std::cout << err.source << ": " << err.message << std::endl;
                         }
                     }
                 }
